@@ -7,7 +7,15 @@ class MoviesController < ApplicationController
     end
   
     def index
-      @movies = Movie.all
+      @sort_param = sort_param
+      @rating_filter_param = rating_filer_params
+      @all_ratings = Movie.all_ratings
+
+      if @sort_param
+        @movies = Movie.with_ratings(@rating_filter_param).order(@sort_param)
+      else
+        @movies = Movie.with_ratings(@rating_filter_param)
+      end
     end
   
     def new
@@ -43,5 +51,16 @@ class MoviesController < ApplicationController
     # This helps make clear which methods respond to requests, and which ones do not.
     def movie_params
       params.require(:movie).permit(:title, :rating, :description, :release_date)
+    end
+
+    def sort_param
+      return session[:sort_param] if params[:sort].nil?
+      session[:sort_param] = params[:sort]
+    end
+
+    def rating_filer_params
+      return session[:rating_filter_param] if params[:ratings].nil?
+      return session[:rating_filter_param] = params[:ratings] if params[:ratings].is_a?(Array)
+      session[:rating_filter_param] = params[:ratings].keys
     end
   end
